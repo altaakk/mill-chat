@@ -83,7 +83,7 @@
 
     <div class="video-container">
         <video autoplay loop muted playsinline class="bg-video">
-            <source src="krak.mp4" type="video/mp4">
+            <source src="mp4/krak.mp4" type="video/mp4">
         </video>
         <div class="video-overlay"></div>
 
@@ -159,7 +159,6 @@
     </div>
 
     <script>
-        // Твій адаптований під роботу у браузері об'єкт конфігурації Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyA57QyfR7KKiS07qaSHu9kRIwrdE6M7xgY",
             authDomain: "mill-995e2.firebaseapp.com",
@@ -170,7 +169,6 @@
             appId: "1:809122978619:web:49677c4c0191d92a05f51e"
         };
 
-        // Ініціалізація бази даних у стилі версії SDK v8
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         let globalSenderName = "Гість";
@@ -191,11 +189,15 @@
             document.getElementById('formStage').style.display = 'none';
             document.getElementById('chatStage').style.display = 'block';
 
-            // Підключаємося до прослуховування бази даних
+            // Очищуємо вікно перед завантаженням, щоб не дублювати повідомлення
+            document.getElementById('chatMessages').innerHTML = '';
+
             database.ref('messages').off(); 
             database.ref('messages').limitToLast(50).on('child_added', (snapshot) => {
                 const data = snapshot.val();
-                displayMessage(data.sender, data.text);
+                if(data) {
+                    displayMessage(data.sender, data.text);
+                }
             });
         }
 
@@ -204,7 +206,6 @@
             const messageText = input.value.trim();
             if (messageText === '') return;
 
-            // Відправляємо повідомлення в хмару
             database.ref('messages').push({
                 sender: globalSenderName,
                 text: messageText
@@ -215,13 +216,6 @@
 
         function displayMessage(sender, text) {
             const chatMessages = document.getElementById('chatMessages');
-            
-            // Запобігаємо дублюванню повідомлень на екрані
-            const isAlreadyDisplayed = Array.from(chatMessages.children).some(
-                msg => msg.innerText.includes(`${sender}:`) && msg.innerText.includes(text)
-            );
-            if (isAlreadyDisplayed) return;
-
             const msgDiv = document.createElement('div');
             
             if (sender === globalSenderName) {
