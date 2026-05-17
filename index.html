@@ -196,14 +196,17 @@
             document.getElementById('formStage').style.display = 'none';
             document.getElementById('chatStage').style.display = 'block';
 
-            // Перевірка авторизації рекрутера
-            if (nameInput === 'REK' && contactInput === 'REk') {
-                document.getElementById('clearChatBtn').style.display = 'block';
-                document.getElementById('chatPartner').querySelector('span').innerText = "Панель рекрутера (Вхід виконано)";
-            } else {
-                document.getElementById('clearChatBtn').style.display = 'none';
-                document.getElementById('chatPartner').querySelector('span').innerText = "Загальна лінія зв'язку";
-            }
+            // Перевірка авторизації рекрутера (тепер без чутливості до пробілів та регістру)
+const checkName = nameInput.toUpperCase(); // Переведе REK, rek, Rek -> в REK
+const checkContact = contactInput.toUpperCase(); // Переведе REk, REK, rek -> в REK
+
+if (checkName === 'REK' && checkContact === 'REK') {
+    document.getElementById('clearChatBtn').style.display = 'block';
+    document.getElementById('chatPartner').querySelector('span').innerText = "Панель рекрутера (Вхід виконано)";
+} else {
+    document.getElementById('clearChatBtn').style.display = 'none';
+    document.getElementById('chatPartner').querySelector('span').innerText = "Загальна лінія зв'язку";
+}
 
             // Очищуємо вікно перед завантаженням, щоб не дублювати повідомлення
             document.getElementById('chatMessages').innerHTML = '';
