@@ -130,7 +130,7 @@
                     </div>
                     <div class="form-group">
                         <label>Контакт у Telegram / Signal</label>
-                        <input type="text" required placeholder="@username або номер">
+                        <input type="text" id="userContact" required placeholder="@username або номер">
                     </div>
                     <div class="form-group">
                         <label>Бажаний підрозділ</label>
@@ -147,7 +147,10 @@
             <div id="chatStage" style="display: none;">
                 <h2 style="font-size: 1.4rem;">Захищений Канал Зв'язку</h2>
                 <div class="chat-container">
-                    <div class="chat-header" id="chatPartner">Загальна лінія зв'язку</div>
+                    <div class="chat-header" id="chatPartner" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Загальна лінія зв'язку</span>
+                        <button id="clearChatBtn" onclick="clearChat()" style="display: none; background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: bold;">Очистити чат</button>
+                    </div>
                     <div class="chat-messages" id="chatMessages"></div>
                     <div class="chat-input-area">
                         <input type="text" id="chatInput" placeholder="Напишіть повідомлення..." onkeypress="handleKeyPress(event)">
@@ -184,19 +187,41 @@
 
         function handleSubmit(e) {
             e.preventDefault();
-            globalSenderName = document.getElementById('userName').value;
+            
+            const nameInput = document.getElementById('userName').value.trim();
+            const contactInput = document.getElementById('userContact').value.trim();
+
+            globalSenderName = nameInput;
 
             document.getElementById('formStage').style.display = 'none';
             document.getElementById('chatStage').style.display = 'block';
+
+            // Перевірка авторизації рекрутера
+            if (nameInput === 'REK' && contactInput === 'REk') {
+                document.getElementById('clearChatBtn').style.display = 'block';
+                document.getElementById('chatPartner').querySelector('span').innerText = "Панель рекрутера (Вхід виконано)";
+            } else {
+                document.getElementById('clearChatBtn').style.display = 'none';
+                document.getElementById('chatPartner').querySelector('span').innerText = "Загальна лінія зв'язку";
+            }
 
             // Очищуємо вікно перед завантаженням, щоб не дублювати повідомлення
             document.getElementById('chatMessages').innerHTML = '';
 
             database.ref('messages').off(); 
+            
+            // Слухаємо додавання повідомлень
             database.ref('messages').limitToLast(50).on('child_added', (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
                     displayMessage(data.sender, data.text);
+                }
+            });
+
+            // Слухаємо повне очищення бази даних (щоб екран очищався в усіх в реальному часі)
+            database.ref('messages').on('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    document.getElementById('chatMessages').innerHTML = '';
                 }
             });
         }
@@ -232,6 +257,13 @@
 
         function handleKeyPress(e) {
             if (e.key === 'Enter') sendMessage();
+        }
+
+        function clearChat() {
+            if (confirm("Ви дійсно хочете видалити всі повідомлення для всіх користувачів?")) {
+                database.ref('messages').remove();
+                document.getElementById('chatMessages').innerHTML = '';
+            }
         }
     </script>
 </body>
